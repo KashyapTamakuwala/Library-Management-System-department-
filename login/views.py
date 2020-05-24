@@ -17,14 +17,14 @@ def mylogin(request):
         return render(request,'login/index.html')
     return HttpResponseRedirect("/library/Request/")
 
+
 def authenticate(request):
     try:
         username=request.POST.get('username','')
         password=request.POST.get('password','')
         a=User.objects.get(username=username)
-        print(a)
         x=auth.authenticate(username=username,password=password)
-        print(x)
+
         if x is not None:
             auth.login(request,x)
             request.session['username']=username
@@ -39,10 +39,14 @@ def authenticate(request):
         r="Invalid Username or Password"
         return render(request,'login/index.html',{"error":r})
 
+
+
 def logout(request):
     auth.logout(request)
     request.session['username']=None
     return HttpResponseRedirect('/login/')
+
+
 
 def createadmin(request):
     a=User.objects.create_user("admin","admin@gmail.com","admin")

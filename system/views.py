@@ -1,5 +1,4 @@
 from django.shortcuts import render,redirect
-from django.template.context_processors import csrf
 from django.template import loader
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -21,11 +20,12 @@ from django.core.files import File
 def BaseLayout(request):
     return render(request,'administrator/base.html')
 
+
 @login_required(login_url='/login/')
 def AllFaculty(request):
     all_faculty=Faculty.objects.all()
     req_count = Requests.objects.all()
-    print(req_count)
+
     t = datetime(date.today().year, date.today().month, date.today().day, 0, 0)
     mydate=t.strftime('%Y-%m-%d')
     allissued = issued.objects.filter(return_date__lt=mydate)
@@ -36,11 +36,12 @@ def AllFaculty(request):
     }
     return render(request,'administrator/Member.html',context=context)
 
+
 @login_required(login_url='/login/')
 def AllBooks(request):
     req_count = Requests.objects.all()
     all_books= Books.objects.all()
-    #print(all_books)
+
     t = datetime(date.today().year, date.today().month, date.today().day, 0, 0)
     mydate=t.strftime('%Y-%m-%d')
     allissued = issued.objects.filter(return_date__lt=mydate)
@@ -50,7 +51,7 @@ def AllBooks(request):
         'overdue':allissued
     }
     return render(request,'administrator/books.html',context=context)
-    #return render_to_response('administrator/books.html', context=context)
+
 
 
 @login_required(login_url='/login/')
@@ -61,13 +62,14 @@ def Add(request):
         email= request.POST.get('email','')
         phone_no = request.POST.get('phone_no','')
         if request.POST.get('ea','') == "Add":
-            print(phone_no)
-            password= User.objects.make_random_password(length=8) #Generate password randomly
-            print(password) #Print Randomly generated password 
+            #Generate password randomly
+            password= User.objects.make_random_password(length=8) 
+
             a=User.objects.create_user(id,email,password)
             a.save()
             faculty= Faculty(id=id,name=name,email=email,phone_no=phone_no,password=password,date_joined=datetime.now())
             faculty.save()
+
             # Receiver email
             to=email
             # body and subject of mail 
@@ -84,13 +86,15 @@ def Add(request):
         all_faculty=Faculty.objects.all()
         return redirect('/administrator/Faculties/')
 
+
 @login_required(login_url='/login/')
 def AddBook(request):
     if request.method == "POST":
+        #fetching id of last book
         last_book = Books.objects.last()
-        #print(last_book.id)
         last_id = last_book.id.split('-')
-        #print(last_id)
+
+        #generating id for new book and adding new book to database
         id = int(last_id[1]) + 1
         Title = request.POST.get('Title','')
         id= "CE-"  + str(id)
@@ -105,9 +109,7 @@ def AddBook(request):
 @login_required(login_url='/login/')
 def Editdata(request):
     if request.method == "GET":
-        #print(request.GET.get('id'))
         fac_data = Faculty.objects.get(id=request.GET.get('id'))
-        #print(fac_data.id)
         data={
             'id':fac_data.id,
             'name':fac_data.name,
@@ -115,6 +117,8 @@ def Editdata(request):
             'phone_no':fac_data.phone_no,
         }
         return JsonResponse(data)
+
+
 
 @login_required(login_url='/login/')
 def DeleteFac(request):
@@ -126,48 +130,54 @@ def DeleteFac(request):
         }
         return JsonResponse(data)
 
+
+
 @login_required(login_url='/login/')   
 def InputCSV(request):
     if request.method == "POST":
+        # Add faculty from csv file
         if(request.POST.get('type') == "fac"):
             csv_file = request.FILES["csv_file"]
             file_data = csv_file.read().decode("utf-8")	
             lines = file_data.split("\n")
-            for line in lines:			
-                fields = line.split(',')
-                print(fields)
-                faculty= Faculty(id=fields[0],name=fields[1],email=fields[2],phone_no=fields[3],password=fields[4],date_joined=datetime.now())
-                faculty.save()
-                print(line)
-            return redirect('/administrator/Faculties/')
+            try:
+                for line in lines:			
+                    fields = line.split(',')
+                    faculty= Faculty(id=fields[0],name=fields[1],email=fields[2],phone_no=fields[3],password=fields[4],date_joined=datetime.now())
+                    faculty.save()
+            except IndexError:
+                return render(request,'administrator/upload.html',{'bcsv':True})
+        
+        # adding Books from csv file
         elif(request.POST.get('type') == "Book"):
             last_book = Books.objects.last()
             sid = int(last_book.sr_no)+1
             csv_file = request.FILES["csv_file"]
             file_data = csv_file.read().decode("utf-8")	
             lines = file_data.split("\n")
-            for line in lines:			
-                fields = line.split(',')
-                print(fields)
-                book= Books(sr_no=sid,id=fields[1],title=fields[2],author=fields[3],publisher=fields[4],available=True)
-                book.save()
-                sid+=1
-                print(line)
-            return redirect('/administrator/Faculties/')
+            try:
+                for line in lines:			
+                    fields = line.split(',')
+                    book= Books(sr_no=sid,id=fields[1],title=fields[2],author=fields[3],publisher=fields[4],available=True)
+                    book.save()
+                    sid+=1
+            except IndexError:
+                return render(request,'administrator/upload.html',{'bcsv':True})
+        
+        # adding students from csv file
         else:
             csv_file = request.FILES["csv_file"]
             file_data = csv_file.read().decode("utf-8")	
             lines = file_data.split("\n")
-            for line in lines:			
-                fields = line.split(',')
-                print(fields)
-                st= Student(id=fields[0],name=fields[1],email=fields[2],phone_no=fields[3],password=fields[4],branch=fields[5])
-                st.save()
-                print(line)
-            return redirect('/administrator/Faculties/')
+            try:
+                for line in lines:			
+                    fields = line.split(',')
+                    st= Student(id=fields[0],name=fields[1],email=fields[2],phone_no=fields[3],password=fields[4],branch=fields[5])
+                    st.save()
+            except IndexError:
+                return render(request,'administrator/upload.html',{'bcsv':True})
     else:
-        return render(request,'administrator/upload.html')
-
+        return render(request,'administrator/upload.html',{'bcsv':False})
 
 
 @login_required(login_url='/login/')
@@ -181,6 +191,8 @@ def ChangebookStatus(request):
             book.available = False
             book.save()
     return JsonResponse({"successful":True})
+
+
 #faculty
 @login_required(login_url='/login/')
 def BookRequests(request):
@@ -189,7 +201,6 @@ def BookRequests(request):
         f.readline()
         f.readline()
         due = int(f.readline())
-        print(due)
 
     if request.method == "POST":
         req = Requests.objects.get(id = request.POST.get('req_id'))

@@ -13,8 +13,7 @@ def Request(req):
         totalissued = list(issued.objects.all().values_list('book_id',flat=True))
         print(totalissued)
         for t in temp:
-          l.append(t.book_id.id)
-        #print(l)  
+          l.append(t.book_id.id)  
         context={
             'books':Books.objects.all(),
             'myrequest': l,
@@ -22,8 +21,6 @@ def Request(req):
         }
         return render (req,'user/home.html',context=context)
     else:
-        #print('POST request')
-        #print(req.POST.get('status'))
         if req.POST.get('status') == "add":
             book=Books.objects.get(id=req.POST.get('bookid'))
             fac=Faculty.objects.get(id=req.session['username'])
@@ -47,6 +44,7 @@ def Allissued(request):
         'totalissued':totalissued,
     }
     return render (request,'user/allissued.html',context=context)
+
     
 @login_required(login_url='/login/')
 def ChangePassword(request):
