@@ -5,6 +5,7 @@ from django.http import JsonResponse
 
 from django.template.context_processors import csrf
 from system.models import issued,Books,Faculty,Requests,issued,StudentIssued
+from student.models import Student
 from datetime import datetime,date
 
 from django.core import mail
@@ -100,7 +101,7 @@ def AddBook(request):
         id= "CE-"  + str(id)
         Publisher= request.POST.get('Publisher','')
         Author= request.POST.get('Author','')
-        a=Books(sr_no=intas(lt_book.sr_no)+1,id=id,title=Title,publisher=Publisher,author=Author,available=True)
+        a=Books(sr_no=int(last_book.sr_no)+1,id=id,title=Title,publisher=Publisher,author=Author,available=True)
         a.save()
     return redirect('/administrator/Books/')
 
@@ -141,19 +142,18 @@ def InputCSV(request):
             file_data = csv_file.read().decode("utf-8")	
             lines = file_data.split("\n")
             try:
-                for line in lines:			
+                for line in lines:	
+                    password= User.objects.make_random_password(length=8) 		
                     fields = line.split(',')
-                    faculty= Faculty(id=fields[0],name=fields[1],email=fields[2],phone_no=fields[3],password=fields[4],date_joined=datetime.now())
+                    faculty= Faculty(id=fields[0],name=fields[1],email=fields[2],phone_no=fields[3],password=password,date_joined=datetime.now())
                     faculty.save()
-
-                    password= User.objects.make_random_password(length=8) 
+                    print(fields[1])
                     a=User.objects.create_user(fields[0],fields[2],password)
                     a.save()
-
                     # Receiver email
-                    to=email
+                    to=fields[2]
                     # body and subject of mail 
-                    body="Hey %s ! \n \n Password for your Ce-Department Library account is %s \n"%(name,password)
+                    body="Hey %s ! \n \n Password for your Ce-Department Library account is %s \n"%(fields[1],password)
                     #Composing email and  sending mail
                     email=EmailMessage('CE-Department',body,to=[to])
                     email.send()
@@ -187,25 +187,25 @@ def InputCSV(request):
             lines = file_data.split("\n")
             try:
                 for line in lines:			
+                    password= User.objects.make_random_password(length=8)
                     fields = line.split(',')
-                    st= Student(id=fields[0],name=fields[1],email=fields[2],phone_no=fields[3],password=fields[4],branch=fields[5])
+                    st= Student(id=fields[0],name=fields[1],email=fields[2],phone_no=fields[3],password=password,branch=fields[4])
                     st.save()
-
-                    password= User.objects.make_random_password(length=8) 
+                    print(fields[1])
                     a=User.objects.create_user(fields[0],fields[2],password)
                     a.save()
 
                     # Receiver email
-                    to=email
+                    to=fields[2]
                     # body and subject of mail 
-                    body="Hey %s ! \n \n Password for your Ce-Department Library account is %s \n"%(name,password)
+                    body="Hey %s ! \n \n Password for your Ce-Department Library account is %s \n"%(fields[1],password)
                     #Composing email and  sending mail
                     email=EmailMessage('CE-Department',body,to=[to])
                     email.send()
             except IndexError:
                 return render(request,'administrator/upload.html',{'bcsv':True,'nbscv':False})
-            except:
-                return render(request,"administrator/upload.html",{'bscv':False,'nbscv':True})
+            #except:
+            #    return render(request,"administrator/upload.html",{'bscv':False,'nbscv':True})
     else:
         return render(request,'administrator/upload.html',{'bcsv':None,'nbscv':None})
 
