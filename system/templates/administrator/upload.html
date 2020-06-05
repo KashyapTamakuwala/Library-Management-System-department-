@@ -18,6 +18,18 @@
 </div>
 {% endif %}
 
+{% if nbscv %}
+<div class="row">
+  <div class="col s10 m6 offset-m3 l4 offset-l4 z-depth-6 ">
+      <div class="chip red accent-4" style="padding: 10px 10px 10px 10px; width: 100%; height: 50px; border-radius: 0%;">
+          <i class=" close material-icons right white-text">close</i>
+          <i class=" material-icons white-text left" style="padding-top: 2px;">error</i>
+          <h6 class="white-text">File Upload <b>Failure</b> <h6>
+      </div>
+  </div>
+</div>
+{% endif %}
+
 
 <form action="/administrator/CSV/" method="POST" enctype="multipart/form-data">{% csrf_token %}
   <div class="row" style="padding-left: 300px;">

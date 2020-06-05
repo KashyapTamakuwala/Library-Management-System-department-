@@ -11,8 +11,7 @@ from django.conf import settings
 
 # Create your views here.
 def mylogin(request):
-    #print(settings.Faculty_DueCharge)
-    #print(request.user.is_anonymous)
+
     if(request.user.is_anonymous):
         return render(request,'login/index.html')
     return HttpResponseRedirect("/library/Request/")

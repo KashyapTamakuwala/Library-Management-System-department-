@@ -145,8 +145,22 @@ def InputCSV(request):
                     fields = line.split(',')
                     faculty= Faculty(id=fields[0],name=fields[1],email=fields[2],phone_no=fields[3],password=fields[4],date_joined=datetime.now())
                     faculty.save()
+
+                    password= User.objects.make_random_password(length=8) 
+                    a=User.objects.create_user(fields[0],fields[2],password)
+                    a.save()
+
+                    # Receiver email
+                    to=email
+                    # body and subject of mail 
+                    body="Hey %s ! \n \n Password for your Ce-Department Library account is %s \n"%(name,password)
+                    #Composing email and  sending mail
+                    email=EmailMessage('CE-Department',body,to=[to])
+                    email.send()
             except IndexError:
-                return render(request,'administrator/upload.html',{'bcsv':True})
+                return render(request,'administrator/upload.html',{'bcsv':True,'nbscv':False})
+            except:
+                return render(request,"administrator/upload.html",{'bscv':False,'nbscv':True})
         
         # adding Books from csv file
         elif(request.POST.get('type') == "Book"):
@@ -162,7 +176,9 @@ def InputCSV(request):
                     book.save()
                     sid+=1
             except IndexError:
-                return render(request,'administrator/upload.html',{'bcsv':True})
+                return render(request,'administrator/upload.html',{'bcsv':True,'nbscv':False})
+            except:
+                return render(request,"administrator/upload.html",{'bscv':False,'nbscv':True})
         
         # adding students from csv file
         else:
@@ -174,10 +190,24 @@ def InputCSV(request):
                     fields = line.split(',')
                     st= Student(id=fields[0],name=fields[1],email=fields[2],phone_no=fields[3],password=fields[4],branch=fields[5])
                     st.save()
+
+                    password= User.objects.make_random_password(length=8) 
+                    a=User.objects.create_user(fields[0],fields[2],password)
+                    a.save()
+
+                    # Receiver email
+                    to=email
+                    # body and subject of mail 
+                    body="Hey %s ! \n \n Password for your Ce-Department Library account is %s \n"%(name,password)
+                    #Composing email and  sending mail
+                    email=EmailMessage('CE-Department',body,to=[to])
+                    email.send()
             except IndexError:
-                return render(request,'administrator/upload.html',{'bcsv':True})
+                return render(request,'administrator/upload.html',{'bcsv':True,'nbscv':False})
+            except:
+                return render(request,"administrator/upload.html",{'bscv':False,'nbscv':True})
     else:
-        return render(request,'administrator/upload.html',{'bcsv':False})
+        return render(request,'administrator/upload.html',{'bcsv':None,'nbscv':None})
 
 
 @login_required(login_url='/login/')
